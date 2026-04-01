@@ -8,7 +8,8 @@ namespace Game.Clicker
     public class ClickController : MonoBehaviour
 {
     [SerializeField] private ClickInput _input;
-
+    [SerializeField] private ZoneView _mainZoneView;
+    
     [Header("Settings")]
     [SerializeField] private float _clicksPerSecond = 5f;
     [SerializeField] private float _critChance = 0.2f;
@@ -33,7 +34,14 @@ namespace Game.Clicker
 
         _critSystem = new CriticalSystem();
         _cooldown = new ClickCooldown(_clicksPerSecond);
-
+        _critSystem._zoneManager = _zoneManager;
+        
+        _onCrit
+            .Subscribe(_ => 
+            {
+                Debug.LogError("crit");
+            }).AddTo(this);
+        
         _onIdleClick
             .Subscribe(_ => 
             {
@@ -48,25 +56,24 @@ namespace Game.Clicker
 
         stream.Subscribe(pos =>
         {
-            // 1. Проверка крита (высший приоритет)
-            if (_critSystem.IsActive)
-            {
-                _critSystem.TryHit(pos);
-                return;
-            }
-
-            // 2. Получаем зону
             var zone = _zoneManager.GetZone(pos);
             if (zone == null) return;
 
             switch (zone.Type)
             {
+                case ZoneType.Crit:
+                    _critSystem.TryHit(pos);
+                    break;
+                
                 case ZoneType.Idle:
                     _onIdleClick.OnNext(Unit.Default);
-
-                    if (Random.value < _critChance)
-                        _critSystem.Spawn(pos, _critSize);
-
+                    if(!_critSystem.IsActive)
+                    {
+                        if (Random.value < _critChance)
+                        {
+                            _critSystem.Spawn(_mainZoneView.RandomPoint(Vector3.one * _critSize), _critSize);
+                        }
+                    }
                     break;
 
                 case ZoneType.UI:

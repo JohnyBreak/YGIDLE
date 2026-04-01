@@ -17,6 +17,11 @@ namespace Game.Clicker
                 .ToList();
         }
 
+        public void AddZone(ClickZone zone)
+        {
+            _zones.Add(zone);
+        }
+
         public ClickZone GetZone(Vector2 pos)
         {
             ClickZone best = null;

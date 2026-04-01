@@ -23,6 +23,13 @@ namespace Game.Clicker
             Priority = priority;
         }
 
+        public void Init(ZoneType type, Bounds bounds, int priority)
+        {
+            Type = type;
+            _bounds = bounds;
+            Priority = priority;
+        }
+
         public bool Contains(Vector2 pos)
         {
             return _bounds.Contains(pos);

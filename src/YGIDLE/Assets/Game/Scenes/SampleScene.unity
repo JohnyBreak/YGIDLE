@@ -430,8 +430,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Clicker.ClickController
   _input: {fileID: 1605735212}
+  _mainZoneView: {fileID: 1447815821}
   _clicksPerSecond: 60
-  _critChance: 0.2
+  _critChance: 0.3
   _critSize: 1
 --- !u!4 &1605735214
 Transform:
