@@ -9,6 +9,7 @@ namespace Game.Clicker
 {
     [SerializeField] private ClickInput _input;
     [SerializeField] private ZoneView _mainZoneView;
+    [SerializeField] private ClickAnimation _clickAnimation;
     
     [Header("Settings")]
     [SerializeField] private float _clicksPerSecond = 5f;
@@ -39,12 +40,14 @@ namespace Game.Clicker
         _onCrit
             .Subscribe(_ => 
             {
+                _clickAnimation.Play();
                 Debug.LogError("crit");
             }).AddTo(this);
         
         _onIdleClick
             .Subscribe(_ => 
             {
+                _clickAnimation.Play();
                 Debug.LogError("idle");
             }).AddTo(this);
         BindStreams();
