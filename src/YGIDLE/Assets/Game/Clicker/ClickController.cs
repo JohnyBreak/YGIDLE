@@ -74,6 +74,14 @@ namespace Game.Clicker
                 .Subscribe(_ => _autoClicker.AddClicker(new AutoClickerConfig() { ClicksPerSecond = .25f }))
                 .AddTo(this);
 
+
+            var b = new BigNumber(25000000);
+            
+            Debug.Log(b.ToShortString());
+            b = new BigNumber(75.25);
+            Debug.Log(b.ToShortString());
+            b = new BigNumber(3005.25);
+            Debug.Log(b.ToShortString());
         }
 
         private void AddResources(float value)

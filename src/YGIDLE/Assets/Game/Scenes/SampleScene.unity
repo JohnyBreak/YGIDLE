@@ -435,6 +435,7 @@ MonoBehaviour:
   _clicksPerSecond: 60
   _critChance: 0.3
   _critSize: 1
+  _resources: 0
 --- !u!4 &1605735214
 Transform:
   m_ObjectHideFlags: 0
