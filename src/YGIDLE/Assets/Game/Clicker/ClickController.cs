@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Game.BigNumberSpace;
 using Game.Clicker.AutoClicker;
+using Game.Clicker.Ui;
 using UniRx;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -16,7 +18,8 @@ namespace Game.Clicker
         [Header("Settings")] [SerializeField] private float _clicksPerSecond = 5f;
         [SerializeField] private float _critChance = 0.2f;
         [SerializeField] private float _critSize = 1f;
-
+        [SerializeField] private UpgradesView _upgradesView;
+        
         private ZoneManager _zoneManager;
         private CriticalSystem _critSystem;
         private ClickCooldown _cooldown;
@@ -29,7 +32,14 @@ namespace Game.Clicker
         public IObservable<float> OnIdleClick => _onIdleClick;
         public IObservable<float> OnCrit => _onCrit;
         [Header("Debug")] [SerializeField] private float _resources;
-
+        
+        List<AutoClickerConfig> _upgrades = new List<AutoClickerConfig>()
+        {
+            new AutoClickerConfig() { Id = "rat",  ClicksPerSecond = .1f },
+            new AutoClickerConfig() { Id = "raven", ClicksPerSecond = .25f },
+            new AutoClickerConfig() { Id = "skeleton", ClicksPerSecond = .5f }
+        };
+        
         private void Start()
         {
             _zoneManager = new ZoneManager();
@@ -64,24 +74,28 @@ namespace Game.Clicker
                 }).AddTo(this);
             BindStreams();
 
-            Observable.EveryUpdate()
-                .Where(_ => Input.GetKeyDown(KeyCode.S))
-                .Subscribe(_ => _autoClicker.AddClicker(new AutoClickerConfig() { ClicksPerSecond = .1f }))
+            _upgradesView.Init(_upgrades);
+            _upgradesView.Click
+                .Subscribe(id => { _autoClicker.AddClicker(_upgrades[id]); })
                 .AddTo(this);
+            // Observable.EveryUpdate()
+            //     .Where(_ => Input.GetKeyDown(KeyCode.S))
+            //     .Subscribe(_ => _autoClicker.AddClicker(new AutoClickerConfig() { ClicksPerSecond = .1f }))
+            //     .AddTo(this);
+            //
+            // Observable.EveryUpdate()
+            //     .Where(_ => Input.GetKeyDown(KeyCode.W))
+            //     .Subscribe(_ => _autoClicker.AddClicker(new AutoClickerConfig() { ClicksPerSecond = .25f }))
+            //     .AddTo(this);
 
-            Observable.EveryUpdate()
-                .Where(_ => Input.GetKeyDown(KeyCode.W))
-                .Subscribe(_ => _autoClicker.AddClicker(new AutoClickerConfig() { ClicksPerSecond = .25f }))
-                .AddTo(this);
 
-
-            var b = new BigNumber(25000000);
-            
-            Debug.Log(b.ToShortString());
-            b = new BigNumber(75.25);
-            Debug.Log(b.ToShortString());
-            b = new BigNumber(3005.25);
-            Debug.Log(b.ToShortString());
+            // var b = new BigNumber(25000000);
+            //
+            // Debug.Log(b.ToShortString());
+            // b = new BigNumber(75.25);
+            // Debug.Log(b.ToShortString());
+            // b = new BigNumber(3005.25);
+            // Debug.Log(b.ToShortString());
         }
 
         private void AddResources(float value)

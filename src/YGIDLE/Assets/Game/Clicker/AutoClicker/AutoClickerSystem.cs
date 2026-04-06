@@ -15,31 +15,29 @@ namespace Game.Clicker.AutoClicker
         
         public void Start()
         {
-            // Observable.EveryUpdate()
-            //     .Subscribe(_ =>
-            //     {
-            //         float cps = GetTotalCPS();
-            //         _buffer += cps * Time.deltaTime;
-            //
-            //         if (_buffer >= 1f)
-            //         {
-            //             int clicks = Mathf.FloorToInt(_buffer);
-            //             _buffer -= clicks;
-            //
-            //             _onAutoClick.OnNext(clicks);
-            //         }
-            //     });
-            
             Observable.EveryUpdate()
                 .Subscribe(_ =>
                 {
                     float cps = GetTotalCPS();
-                    if (cps <= 0f) return;
-
-                    float clicksThisFrame = cps * Time.deltaTime;
-
-                    _onAutoClick.OnNext(clicksThisFrame);
+                    _buffer += cps * Time.deltaTime;
+                    if (_buffer >= 1f)
+                    {
+                        int clicks = Mathf.FloorToInt(_buffer);
+                        _buffer -= clicks;
+                        _onAutoClick.OnNext(clicks);
+                    }
                 });
+            
+            // Observable.EveryUpdate()
+            //     .Subscribe(_ =>
+            //     {
+            //         float cps = GetTotalCPS();
+            //         if (cps <= 0f) return;
+            //
+            //         float clicksThisFrame = cps * Time.deltaTime;
+            //
+            //         _onAutoClick.OnNext(clicksThisFrame);
+            //     });
         }
         
         public void AddClicker(AutoClickerConfig config, int amount = 1)
