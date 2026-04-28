@@ -12,12 +12,17 @@ namespace Game.Clicker.AutoClicker
         private Subject<float> _onAutoClick = new Subject<float>();
         public IObservable<float> OnAutoClick => _onAutoClick;
         private float _buffer;
-        
+        public Func<bool> IsFull;
         public void Start()
         {
             Observable.EveryUpdate()
                 .Subscribe(_ =>
                 {
+                    if (IsFull.Invoke())
+                    {
+                        return;
+                    }
+
                     float cps = GetTotalCPS();
                     _buffer += cps * Time.deltaTime;
                     if (_buffer >= 1f)

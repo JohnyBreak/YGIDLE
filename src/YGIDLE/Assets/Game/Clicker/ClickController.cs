@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Game.BigNumberSpace;
 using Game.Clicker.AutoClicker;
 using Game.Clicker.Ui;
+using TMPro;
 using UniRx;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -11,11 +11,14 @@ namespace Game.Clicker
 {
     public class ClickController : MonoBehaviour
     {
+        [SerializeField] private float _maxResources;
+        [SerializeField] private TMP_Text _resourcesText;
         [SerializeField] private ClickInput _input;
         [SerializeField] private ZoneView _mainZoneView;
         [SerializeField] private ClickAnimation _clickAnimation;
 
-        [Header("Settings")] [SerializeField] private float _clicksPerSecond = 5f;
+        [Header("Settings")] 
+        [SerializeField] private float _clicksPerSecond = 5f;
         [SerializeField] private float _critChance = 0.2f;
         [SerializeField] private float _critSize = 1f;
         [SerializeField] private UpgradesView _upgradesView;
@@ -24,14 +27,16 @@ namespace Game.Clicker
         private CriticalSystem _critSystem;
         private ClickCooldown _cooldown;
         private AutoClickerSystem _autoClicker;
-
+        private float _resources;
+        
         private Subject<float> _onIdleClick = new Subject<float>();
         private Subject<float> _onUIClick = new Subject<float>();
         private Subject<float> _onCrit = new Subject<float>();
 
+        public bool IsFull => (_maxResources - _resources) < 0.0001f;
         public IObservable<float> OnIdleClick => _onIdleClick;
         public IObservable<float> OnCrit => _onCrit;
-        [Header("Debug")] [SerializeField] private float _resources;
+
         
         List<AutoClickerConfig> _upgrades = new List<AutoClickerConfig>()
         {
@@ -47,9 +52,13 @@ namespace Game.Clicker
             _autoClicker = new AutoClickerSystem();
             _critSystem = new CriticalSystem();
             _cooldown = new ClickCooldown(_clicksPerSecond);
+            
             _critSystem._zoneManager = _zoneManager;
-
+            
+            _autoClicker.IsFull = () => IsFull;
+            
             _autoClicker.Start();
+            
             _autoClicker.OnAutoClick.Subscribe(value =>
             {
                 _clickAnimation.Play();
@@ -78,30 +87,37 @@ namespace Game.Clicker
             _upgradesView.Click
                 .Subscribe(id => { _autoClicker.AddClicker(_upgrades[id]); })
                 .AddTo(this);
-            // Observable.EveryUpdate()
-            //     .Where(_ => Input.GetKeyDown(KeyCode.S))
-            //     .Subscribe(_ => _autoClicker.AddClicker(new AutoClickerConfig() { ClicksPerSecond = .1f }))
-            //     .AddTo(this);
-            //
-            // Observable.EveryUpdate()
-            //     .Where(_ => Input.GetKeyDown(KeyCode.W))
-            //     .Subscribe(_ => _autoClicker.AddClicker(new AutoClickerConfig() { ClicksPerSecond = .25f }))
-            //     .AddTo(this);
-
-
-            // var b = new BigNumber(25000000);
-            //
-            // Debug.Log(b.ToShortString());
-            // b = new BigNumber(75.25);
-            // Debug.Log(b.ToShortString());
-            // b = new BigNumber(3005.25);
-            // Debug.Log(b.ToShortString());
+            
+            
+            Observable.EveryUpdate()
+                .Where(_ => Input.GetMouseButtonDown(1))
+                .Subscribe(pos =>
+                {
+                    _resources -= 40;
+                    if (_resources < 0)
+                    {
+                        _resources = 0;
+                    }
+                })
+                .AddTo(this);
         }
 
         private void AddResources(float value)
         {
+            if (IsFull)
+            {
+                return;
+            }
+
             _resources += value;
-            Debug.LogError($"resources {_resources}");
+            
+            if (_resources > _maxResources)
+            {
+                _resources = _maxResources;
+            }
+            
+            _resourcesText.text = _resources.ToString();
+            //Debug.LogError($"resources {_resources}");
         }
 
         private void BindStreams()
